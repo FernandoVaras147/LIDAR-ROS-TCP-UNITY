@@ -1,0 +1,67 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+using RosMessageTypes.UnityRoboticsDemo;
+
+using Unity.Robotics.ROSTCPConnector;
+using Unity.Robotics.ROSTCPConnector.MessageGeneration;
+using System;
+
+public class PointcloudPublisher : MonoBehaviour
+{
+    public Lidar lidar;
+
+    ROSConnection ros;
+    public string topicName = "/pointcloud";
+    public float publishMessageFrequency = 0.5f;
+    private float timeElapsed;
+
+    void Start()
+    {
+        ros = ROSConnection.GetOrCreateInstance();
+        ros.RegisterPublisher<PointCloud2Msg>(topicName);
+    }
+
+    void Update()
+    {
+        timeElapsed += Time.deltaTime;
+        if (timeElapsed > publishMessageFrequency)
+        {
+            timeElapsed = 0;
+
+            var points = lidar.Scan();
+            int numPoints = points.Length / 3;
+
+            byte[] byteArray = new byte[numPoints * 12]; // 3 floats (x,y,z) * 4 bytes
+            Buffer.BlockCopy(points, 0, byteArray, 0, byteArray.Length);
+
+            PointFieldMsg[] fields = new PointFieldMsg[]
+            {
+                new PointFieldMsg("x", 0, PointFieldMsg.FLOAT32, 1),
+                new PointFieldMsg("y", 4, PointFieldMsg.FLOAT32, 1),
+                new PointFieldMsg("z", 8, PointFieldMsg.FLOAT32, 1)
+            };
+
+            HeaderMsg header = new HeaderMsg
+            {
+                frame_id = "M8_Fix_Reference"
+            };
+
+            PointCloud2Msg pcd = new PointCloud2Msg
+            {
+                header = header,
+                height = 1,
+                width = (uint)numPoints,
+                fields = fields,
+                is_bigendian = false,
+                point_step = 12,
+                row_step = (uint)(numPoints * 12),
+                data = byteArray,
+                is_dense = true
+            };
+
+            ros.Publish(topicName, pcd);
+        }
+    }
+}
