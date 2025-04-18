@@ -3,7 +3,7 @@ Este repositorio contiene la implementación de un sensor LIDAR simulado en Unit
 
 Estructura del Proyecto
 
-• Los archivos LaserScanVisualizer.cs, Lidar.cs y PointcloudPublisher.cs deben colocarse dentro de la carpeta Assets del proyecto en Unity.
+• Los archivos Lidar.cs y PointcloudPublisher.cs deben colocarse dentro de la carpeta Assets del proyecto en Unity.
 
 • Algunas clases de LaserScanVisualizer.cs y Lidar.cs deben asignarse al GameObject llamado Lidar en la escena de Unity.
 
